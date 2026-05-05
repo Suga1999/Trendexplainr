@@ -433,7 +433,7 @@
     ];
 
     // MAIN APP
-    const App = (() => {
+  const App = (() => {
       const $ = (sel) => document.querySelector(sel);
       
       function formatViews(n) {
@@ -560,6 +560,38 @@
         `;
       }
 
+      function renderSearch(query) {
+        const searchTerm = decodeURIComponent(query).toLowerCase();
+        
+        const results = CONTENT.filter(article => {
+          return article.title.toLowerCase().includes(searchTerm) ||
+                 article.summary.toLowerCase().includes(searchTerm) ||
+                 (article.tags && article.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ||
+                 article.type.toLowerCase().includes(searchTerm);
+        });
+        
+        const resultsHTML = results.length > 0 
+          ? results.map(article => renderArticleCard(article)).join('')
+          : `<div style="text-align:center; padding:60px 20px; color:var(--text-muted);">
+               <div style="font-size:3rem; margin-bottom:16px;">🔍</div>
+               <h3>No results found for "${searchTerm}"</h3>
+               <p style="margin-top:8px;">Try "delulu", "d4vd", or "sora"</p>
+             </div>`;
+        
+        return `
+          <div class="container">
+            <div style="margin:100px 0 40px;">
+              <span onclick="App.navigate('#/')" style="cursor:pointer;color:var(--neon-pink);">← Back to Home</span>
+              <h1 style="margin:20px 0 8px;">Search Results</h1>
+              <p style="color:var(--text-muted);">${results.length} result${results.length !== 1 ? 's' : ''} for "${searchTerm}"</p>
+            </div>
+            <div class="articles-grid">
+              ${resultsHTML}
+            </div>
+          </div>
+        `;
+      }
+
       function initTicker() {
         const ticker = $('#ticker-inner');
         if (ticker && TRENDING_TICKER) {
@@ -579,6 +611,25 @@
         }
       }
 
+      function initSearch() {
+        const searchInput = document.getElementById('nav-search-input');
+        if (!searchInput) return;
+        
+        searchInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            const query = searchInput.value.trim();
+            if (query) {
+              window.location.hash = `#/search/${encodeURIComponent(query)}`;
+              searchInput.value = '';
+              const mobileNav = document.getElementById('mobile-nav');
+              const hamburgerBtn = document.getElementById('hamburger-btn');
+              if (mobileNav) mobileNav.classList.remove('open');
+              if (hamburgerBtn) hamburgerBtn.classList.remove('open');
+            }
+          }
+        });
+      }
+
       function route() {
         const hash = window.location.hash || '#/';
         const app = $('#app');
@@ -593,6 +644,9 @@
         } else if (hash.startsWith('#/category/')) {
           const type = hash.replace('#/category/', '');
           html = renderCategory(type);
+        } else if (hash.startsWith('#/search/')) {
+          const query = hash.replace('#/search/', '');
+          html = renderSearch(query);
         } else {
           html = '<div class="container"><h1>404 - Page not found</h1></div>';
         }
@@ -609,6 +663,7 @@
       function init() {
         initTicker();
         initHamburger();
+        initSearch();
         route();
       }
       
