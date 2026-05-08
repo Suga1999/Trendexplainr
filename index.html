@@ -3,14 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>TrendExplainr – Understand viral trends in 30 seconds</title>
   <meta name="description" content="Short explanations of TikTok trends, viral slang, creator drama, memes, and internet culture — updated daily." />
- 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
   <style>
     :root {
       --bg: #080810;
@@ -37,6 +34,7 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: var(--font-body);
       background-color: var(--bg);
@@ -44,8 +42,339 @@
       line-height: 1.6;
       overflow-x: hidden;
     }
+
+    /* ─── INTRO SCREEN ─── */
+    #intro {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #080810;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+
+    #intro.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* Particle canvas */
+    #intro-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Scanlines overlay */
+    .scanlines {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.04) 2px,
+        rgba(0,0,0,0.04) 4px
+      );
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Radial glow behind title */
+    .intro-glow {
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,45,85,0.12) 0%, rgba(0,212,255,0.06) 40%, transparent 70%);
+      filter: blur(40px);
+      z-index: 1;
+    }
+
+    .intro-content {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      text-align: center;
+      padding: 0 24px;
+    }
+
+    /* Live dot */
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fade-up 0.6s ease 0.3s forwards;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #39ff14;
+      box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+      animation: live-pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes live-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    /* Main glitch title */
+    .intro-title {
+      font-family: var(--font-display);
+      font-size: clamp(3.5rem, 10vw, 8rem);
+      font-weight: 800;
+      line-height: 1;
+      position: relative;
+      opacity: 0;
+      animation: fade-up 0.7s ease 0.5s forwards;
+    }
+
+    .intro-title .t-trend {
+      background: linear-gradient(135deg, #ff2d55 0%, #ff6b9d 50%, #00d4ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+    }
+
+    .intro-title .t-explainr {
+      color: var(--text);
+      display: inline-block;
+    }
+
+    /* Glitch pseudo layers */
+    .intro-title::before,
+    .intro-title::after {
+      content: 'TrendExplainr';
+      position: absolute;
+      top: 0; left: 0;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: inherit;
+      width: 100%;
+    }
+    .intro-title::before {
+      color: #ff2d55;
+      opacity: 0;
+      animation: glitch-1 4s 1.5s infinite;
+      clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+    }
+    .intro-title::after {
+      color: #00d4ff;
+      opacity: 0;
+      animation: glitch-2 4s 1.5s infinite;
+      clip-path: polygon(0 55%, 100% 55%, 100% 70%, 0 70%);
+    }
+
+    @keyframes glitch-1 {
+      0%, 90%, 100% { opacity: 0; transform: none; }
+      92% { opacity: 0.7; transform: translateX(-4px); }
+      94% { opacity: 0.5; transform: translateX(3px); }
+      96% { opacity: 0; transform: none; }
+    }
+    @keyframes glitch-2 {
+      0%, 90%, 100% { opacity: 0; transform: none; }
+      91% { opacity: 0.6; transform: translateX(4px); }
+      93% { opacity: 0.4; transform: translateX(-2px); }
+      95% { opacity: 0; transform: none; }
+    }
+
+    .intro-tagline {
+      font-size: clamp(0.9rem, 2vw, 1.15rem);
+      color: var(--text-muted);
+      max-width: 440px;
+      opacity: 0;
+      animation: fade-up 0.6s ease 0.8s forwards;
+    }
+
+    /* Trending ticker inside intro */
+    .intro-ticker-wrap {
+      width: 100%;
+      max-width: 600px;
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      padding: 10px 0;
+      background: var(--glass);
+      opacity: 0;
+      animation: fade-up 0.6s ease 1s forwards;
+      position: relative;
+    }
+
+    .intro-ticker-wrap::before,
+    .intro-ticker-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 60px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .intro-ticker-wrap::before {
+      left: 0;
+      background: linear-gradient(90deg, #080810, transparent);
+    }
+    .intro-ticker-wrap::after {
+      right: 0;
+      background: linear-gradient(-90deg, #080810, transparent);
+    }
+
+    .intro-ticker {
+      display: flex;
+      white-space: nowrap;
+      animation: ticker-scroll 30s linear infinite;
+      width: max-content;
+    }
+
+    .intro-ticker-item {
+      padding: 0 28px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    .intro-ticker-item .hot { color: var(--neon-pink); }
+
+    @keyframes ticker-scroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* Explore button */
+    .intro-btn {
+      position: relative;
+      padding: 18px 52px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #ff2d55, #c4003f);
+      opacity: 0;
+      animation: fade-up 0.6s ease 1.2s forwards;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 0 30px rgba(255,45,85,0.25);
+    }
+
+    .intro-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      border-radius: 999px;
+    }
+
+    .intro-btn:hover {
+      transform: scale(1.04);
+      box-shadow: 0 0 50px rgba(255,45,85,0.5);
+    }
+
+    .intro-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Corner decorations */
+    .corner {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      z-index: 3;
+      opacity: 0.25;
+    }
+    .corner-tl { top: 24px; left: 24px; border-top: 1px solid var(--neon-pink); border-left: 1px solid var(--neon-pink); }
+    .corner-tr { top: 24px; right: 24px; border-top: 1px solid var(--neon-blue); border-right: 1px solid var(--neon-blue); }
+    .corner-bl { bottom: 24px; left: 24px; border-bottom: 1px solid var(--neon-pink); border-left: 1px solid var(--neon-pink); }
+    .corner-br { bottom: 24px; right: 24px; border-bottom: 1px solid var(--neon-blue); border-right: 1px solid var(--neon-blue); }
+
+    /* Floating stat pills */
+    .stat-pill {
+      position: absolute;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      z-index: 3;
+      opacity: 0;
+      animation: float-in 0.8s ease forwards, float-bob 5s ease-in-out infinite;
+    }
+
+    .stat-pill .val { color: var(--text); font-weight: 500; }
+    .stat-pill-1 { top: 22%; left: 6%; animation-delay: 1.4s, 1.4s; }
+    .stat-pill-2 { top: 28%; right: 6%; animation-delay: 1.6s, 1.6s; }
+    .stat-pill-3 { bottom: 28%; left: 7%; animation-delay: 1.8s, 1.8s; }
+    .stat-pill-4 { bottom: 22%; right: 7%; animation-delay: 2s, 2s; }
+
+    @keyframes float-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float-bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Page transition */
+    #page-transition {
+      position: fixed;
+      inset: 0;
+      background: #ff2d55;
+      z-index: 9998;
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: transform 0.4s cubic-bezier(0.7, 0, 0.3, 1);
+      pointer-events: none;
+    }
+
+    #page-transition.sweep-in {
+      transform: scaleY(1);
+      transform-origin: bottom;
+    }
+
+    #page-transition.sweep-out {
+      transform: scaleY(0);
+      transform-origin: top;
+    }
+
+    /* ─── MAIN SITE (hidden until intro exits) ─── */
+    #site {
+      display: none;
+    }
+
+    #site.visible {
+      display: block;
+    }
+
     .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
-    
+
     #navbar {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -54,6 +383,7 @@
       background: rgba(8,8,16,0.85);
       border-bottom: 1px solid var(--glass-border);
     }
+
     .navbar-inner {
       display: flex;
       align-items: center;
@@ -61,6 +391,7 @@
       height: 64px;
       gap: 24px;
     }
+
     .logo {
       font-family: var(--font-display);
       font-size: 1.5rem;
@@ -70,8 +401,10 @@
       align-items: center;
       gap: 8px;
     }
+
     .logo-trend { color: var(--neon-pink); }
     .logo-explainr { color: var(--text); }
+
     .logo-dot {
       width: 8px; height: 8px;
       border-radius: 50%;
@@ -79,11 +412,12 @@
       box-shadow: 0 0 12px var(--neon-pink);
       animation: pulse-dot 2s ease-in-out infinite;
     }
+
     @keyframes pulse-dot {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.6; transform: scale(0.8); }
     }
-    
+
     .nav-search { flex: 1; max-width: 400px; position: relative; }
     .nav-search input {
       width: 100%;
@@ -96,6 +430,7 @@
       color: var(--text);
       outline: none;
     }
+
     .nav-search-icon {
       position: absolute;
       left: 16px;
@@ -103,6 +438,7 @@
       transform: translateY(-50%);
       color: var(--text-muted);
     }
+
     .nav-links { display: flex; align-items: center; gap: 8px; }
     .nav-link {
       font-size: 0.875rem;
@@ -113,11 +449,12 @@
       color: var(--text-muted);
     }
     .nav-link:hover { color: var(--text); background: var(--glass); }
+
     .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
     .hamburger span { width: 22px; height: 2px; background: var(--text); border-radius: 999px; }
     .mobile-nav { display: none; flex-direction: column; gap: 4px; padding: 12px 24px; border-top: 1px solid var(--glass-border); }
     .mobile-nav.open { display: flex; }
-    
+
     .ticker-bar {
       background: linear-gradient(90deg, rgba(255,45,85,0.08) 0%, rgba(0,212,255,0.05) 100%);
       border-bottom: 1px solid var(--glass-border);
@@ -125,33 +462,21 @@
       overflow: hidden;
       margin-top: 64px;
     }
+
     .ticker-inner {
       display: flex;
       white-space: nowrap;
       animation: ticker-scroll 60s linear infinite;
       width: max-content;
     }
+
     .ticker-item { padding: 0 40px; font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-muted); cursor: pointer; }
-    @keyframes ticker-scroll {
-      from { transform: translateX(0); }
-      to { transform: translateX(-50%); }
-    }
-    
+
     .hero { padding: 100px 0 80px; text-align: center; position: relative; }
     .hero-title { font-size: clamp(3rem, 7vw, 6rem); font-family: var(--font-display); font-weight: 800; margin-bottom: 20px; }
     .gradient-text { background: linear-gradient(135deg, var(--neon-pink) 0%, #ff6b9d 40%, var(--neon-blue) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .hero-subtitle { font-size: clamp(1rem, 2vw, 1.25rem); color: var(--text-muted); max-width: 480px; margin: 0 auto 40px; }
-    .hero-cta {
-      background: linear-gradient(135deg, var(--neon-pink) 0%, #d4004f 100%);
-      color: white;
-      padding: 16px 36px;
-      border-radius: 999px;
-      cursor: pointer;
-      border: none;
-      font-size: 1rem;
-      font-weight: 700;
-    }
-    
+
     .categories-grid { display: flex; gap: 12px; flex-wrap: wrap; margin: 32px 0; }
     .category-chip {
       display: flex;
@@ -162,8 +487,10 @@
       border: 1px solid var(--glass-border);
       border-radius: 999px;
       cursor: pointer;
+      transition: var(--transition);
     }
-    
+    .category-chip:hover { background: var(--glass-hover); }
+
     .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin: 32px 0; }
     .article-card {
       background: var(--glass);
@@ -176,18 +503,12 @@
     .article-card:hover { transform: translateY(-3px); background: var(--glass-hover); }
     .card-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; margin-bottom: 10px; }
     .card-summary { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 16px; }
-    .type-badge {
-      display: inline-block;
-      font-size: 0.7rem;
-      padding: 4px 10px;
-      border-radius: 999px;
-      margin-bottom: 12px;
-    }
+    .type-badge { display: inline-block; font-size: 0.7rem; padding: 4px 10px; border-radius: 999px; margin-bottom: 12px; }
     .badge-term { background: rgba(255,45,85,0.1); color: #ff2d55; }
     .badge-news { background: rgba(255,214,10,0.1); color: #ffd60a; }
     .badge-ai { background: rgba(48,209,88,0.1); color: #30d158; }
     .trending-badge { background: rgba(255,45,85,0.12); color: var(--neon-pink); font-size: 0.65rem; padding: 3px 8px; border-radius: 999px; margin-left: 8px; }
-    
+
     .content-block {
       background: var(--glass);
       border: 1px solid var(--glass-border);
@@ -203,27 +524,41 @@
       letter-spacing: 0.1em;
       margin-bottom: 14px;
     }
-    .article-hero { padding: 40px 0 60px; max-width: 780px; margin: 0 auto; }
+
     .article-meta-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
     .article-title { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 20px; }
     .article-summary { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 32px; }
     .article-back { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer; margin-bottom: 32px; }
     .article-back:hover { color: var(--neon-pink); }
-    
+
     footer { background: var(--bg2); border-top: 1px solid var(--glass-border); padding: 60px 0 32px; margin-top: 80px; }
     .footer-inner { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
     .footer-bottom { display: flex; justify-content: space-between; padding-top: 24px; border-top: 1px solid var(--glass-border); }
-    
+
     @media (max-width: 768px) {
       .nav-links { display: none; }
       .nav-search { max-width: 200px; }
       .hamburger { display: flex; }
       .footer-inner { grid-template-columns: 1fr; }
       .content-block { padding: 20px; }
+      .stat-pill-1, .stat-pill-2, .stat-pill-3, .stat-pill-4 { display: none; }
+    }
+
+    /* site enter animation */
+    #site.visible .hero,
+    #site.visible .categories-grid,
+    #site.visible .articles-grid {
+      animation: fade-up-site 0.6s ease both;
+    }
+    #site.visible .categories-grid { animation-delay: 0.1s; }
+    #site.visible .articles-grid { animation-delay: 0.2s; }
+
+    @keyframes fade-up-site {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
-  <!-- ⬇️ PUT YOUR GOOGLE ANALYTICS CODE RIGHT HERE ⬇️ -->
-  <!-- Google tag (gtag.js) -->
+
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-L2T4QWZR9N"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -231,83 +566,208 @@
     gtag('js', new Date());
     gtag('config', 'G-L2T4QWZR9N');
   </script>
-  <!-- ⬆️ GOOGLE ANALYTICS ENDS HERE ⬆️ -->
 </head>
 <body>
 
-  <header>
-    <nav id="navbar">
-      <div class="container">
-        <div class="navbar-inner">
-          <div class="logo" onclick="App.navigate('#/')">
-            <span class="logo-dot"></span>
-            <span class="logo-trend">Trend</span><span class="logo-explainr">Explainr</span>
+  <!-- PAGE TRANSITION LAYER -->
+  <div id="page-transition"></div>
+
+  <!-- ══════════════════════════════════════════
+       INTRO SCREEN
+  ══════════════════════════════════════════ -->
+  <div id="intro">
+    <canvas id="intro-canvas"></canvas>
+    <div class="scanlines"></div>
+    <div class="intro-glow"></div>
+
+    <!-- Corner brackets -->
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <!-- Floating stat pills -->
+    <div class="stat-pill stat-pill-1"><span class="val">2.4M</span>&nbsp;trending now</div>
+    <div class="stat-pill stat-pill-2">updated&nbsp;<span class="val">daily</span></div>
+    <div class="stat-pill stat-pill-3"><span class="val">30s</span>&nbsp;avg read</div>
+    <div class="stat-pill stat-pill-4"><span class="val">100+</span>&nbsp;trends</div>
+
+    <div class="intro-content">
+      <!-- Live badge -->
+      <div class="live-indicator">
+        <span class="live-dot"></span>
+        <span>Live Trends</span>
+      </div>
+
+      <!-- Glitch title -->
+      <h1 class="intro-title">
+        <span class="t-trend">Trend</span><span class="t-explainr">Explainr</span>
+      </h1>
+
+      <!-- Tagline -->
+      <p class="intro-tagline">Understand viral trends, slang, and internet culture — in 30 seconds flat.</p>
+
+      <!-- Mini ticker -->
+      <div class="intro-ticker-wrap">
+        <div class="intro-ticker" id="intro-ticker"></div>
+      </div>
+
+      <!-- CTA button -->
+      <button class="intro-btn" id="intro-btn" onclick="enterSite()">
+        Explore Trends
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MAIN SITE
+  ══════════════════════════════════════════ -->
+  <div id="site">
+    <header>
+      <nav id="navbar">
+        <div class="container">
+          <div class="navbar-inner">
+            <div class="logo" onclick="App.navigate('#/')">
+              <span class="logo-dot"></span>
+              <span class="logo-trend">Trend</span><span class="logo-explainr">Explainr</span>
+            </div>
+            <div class="nav-search">
+              <span class="nav-search-icon">🔍</span>
+              <input type="search" id="nav-search-input" placeholder="Search trends..." />
+            </div>
+            <div class="nav-links">
+              <span class="nav-link" onclick="App.navigate('#/')">Home</span>
+              <span class="nav-link" onclick="App.navigate('#/category/term')">Terms</span>
+              <span class="nav-link" onclick="App.navigate('#/category/ai')">AI</span>
+              <span class="nav-link" onclick="App.navigate('#/category/news')">News</span>
+            </div>
+            <button class="hamburger" id="hamburger-btn">
+              <span></span><span></span><span></span>
+            </button>
           </div>
-          <div class="nav-search">
-            <span class="nav-search-icon">🔍</span>
-            <input type="search" id="nav-search-input" placeholder="Search trends..." />
-          </div>
-          <div class="nav-links">
+          <div class="mobile-nav" id="mobile-nav">
             <span class="nav-link" onclick="App.navigate('#/')">Home</span>
             <span class="nav-link" onclick="App.navigate('#/category/term')">Terms</span>
             <span class="nav-link" onclick="App.navigate('#/category/ai')">AI</span>
             <span class="nav-link" onclick="App.navigate('#/category/news')">News</span>
           </div>
-          <button class="hamburger" id="hamburger-btn">
-            <span></span><span></span><span></span>
-          </button>
         </div>
-        <div class="mobile-nav" id="mobile-nav">
-          <span class="nav-link" onclick="App.navigate('#/')">Home</span>
-          <span class="nav-link" onclick="App.navigate('#/category/term')">Terms</span>
-          <span class="nav-link" onclick="App.navigate('#/category/ai')">AI</span>
-          <span class="nav-link" onclick="App.navigate('#/category/news')">News</span>
+      </nav>
+    </header>
+
+    <div class="ticker-bar">
+      <div class="ticker-inner" id="ticker-inner"></div>
+    </div>
+
+    <main id="app">
+      <div class="container" style="padding:120px 0;text-align:center;">
+        <div>⚡</div>
+        <p>Loading trends…</p>
+      </div>
+    </main>
+
+    <footer>
+      <div class="container">
+        <div class="footer-inner">
+          <div>
+            <div class="logo" style="font-size:1.25rem;">
+              <span class="logo-trend">Trend</span><span class="logo-explainr">Explainr</span>
+            </div>
+            <p style="font-size:0.875rem;color:var(--text-muted);margin-top:12px;">Understand viral trends in 30 seconds.</p>
+          </div>
+          <div>
+            <h3>Categories</h3>
+            <ul style="list-style:none;margin-top:12px;">
+              <li><span style="cursor:pointer;color:var(--text-muted);" onclick="App.navigate('#/category/term')">Viral Terms</span></li>
+              <li><span style="cursor:pointer;color:var(--text-muted);" onclick="App.navigate('#/category/ai')">AI Trends</span></li>
+              <li><span style="cursor:pointer;color:var(--text-muted);" onclick="App.navigate('#/category/news')">News</span></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Stay Updated</h3>
+            <button onclick="alert('Coming soon!')" style="margin-top:12px;padding:10px 20px;background:var(--glass);border:1px solid var(--glass-border);color:var(--text);border-radius:8px;cursor:pointer;">Daily Digest</button>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>© 2025 TrendExplainr</p>
         </div>
       </div>
-    </nav>
-  </header>
-
-  <div class="ticker-bar">
-    <div class="ticker-inner" id="ticker-inner"></div>
+    </footer>
   </div>
 
-  <main id="app">
-    <div class="container" style="padding:120px 0;text-align:center;">
-      <div>⚡</div>
-      <p>Loading trends…</p>
-    </div>
-  </main>
-
-  <footer>
-    <div class="container">
-      <div class="footer-inner">
-        <div>
-          <div class="logo" style="font-size:1.25rem;">
-            <span class="logo-trend">Trend</span><span class="logo-explainr">Explainr</span>
-          </div>
-          <p style="font-size:0.875rem;color:var(--text-muted);margin-top:12px;">Understand viral trends in 30 seconds.</p>
-        </div>
-        <div>
-          <h3>Categories</h3>
-          <ul style="list-style:none;margin-top:12px;">
-            <li><span class="footer-link" onclick="App.navigate('#/category/term')">Viral Terms</span></li>
-            <li><span class="footer-link" onclick="App.navigate('#/category/ai')">AI Trends</span></li>
-            <li><span class="footer-link" onclick="App.navigate('#/category/news')">News</span></li>
-          </ul>
-        </div>
-        <div>
-          <h3>Stay Updated</h3>
-          <button onclick="alert('Coming soon!')" style="margin-top:12px;padding:10px 20px;background:var(--glass);border:1px solid var(--glass-border);color:var(--text);border-radius:8px;cursor:pointer;">Daily Digest</button>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2025 TrendExplainr</p>
-      </div>
-    </div>
-  </footer>
-
   <script>
-    // TRENDING TICKER DATA
+    // ─── PARTICLE SYSTEM ───
+    (function() {
+      const canvas = document.getElementById('intro-canvas');
+      const ctx = canvas.getContext('2d');
+      let W, H, particles = [];
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+
+      function createParticle() {
+        const colors = ['rgba(255,45,85,', 'rgba(0,212,255,', 'rgba(191,90,242,', 'rgba(255,214,10,'];
+        const col = colors[Math.floor(Math.random() * colors.length)];
+        return {
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: Math.random() * 1.5 + 0.3,
+          alpha: Math.random() * 0.5 + 0.1,
+          speed: Math.random() * 0.4 + 0.1,
+          drift: (Math.random() - 0.5) * 0.3,
+          color: col
+        };
+      }
+
+      resize();
+      window.addEventListener('resize', resize);
+      for (let i = 0; i < 120; i++) particles.push(createParticle());
+
+      // Connection lines between nearby particles
+      function drawConnections() {
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < 100) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(255,255,255,${0.03 * (1 - dist/100)})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      let raf;
+      function tick() {
+        ctx.clearRect(0, 0, W, H);
+        drawConnections();
+        particles.forEach(p => {
+          p.y -= p.speed;
+          p.x += p.drift;
+          if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
+          if (p.x < 0 || p.x > W) p.drift *= -1;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.color + p.alpha + ')';
+          ctx.fill();
+        });
+        raf = requestAnimationFrame(tick);
+      }
+      tick();
+
+      window._stopParticles = function() {
+        cancelAnimationFrame(raf);
+      };
+    })();
+
+    // ─── INTRO TICKER ───
     const TRENDING_TICKER = [
       "🔥 D4vd Murder Case: Singer Used Chainsaw to Dismember Teen",
       "💥 Iran War Explained: How the Regional Conflict Began",
@@ -317,7 +777,41 @@
       "👾 NPC Livestreaming Makes Thousands"
     ];
 
-    // CATEGORIES
+    (function initIntroTicker() {
+      const el = document.getElementById('intro-ticker');
+      const items = [...TRENDING_TICKER, ...TRENDING_TICKER];
+      el.innerHTML = items.map(t => `<span class="intro-ticker-item">${t}</span>`).join('');
+    })();
+
+    // ─── ENTER SITE TRANSITION ───
+    function enterSite() {
+      const transition = document.getElementById('page-transition');
+      const intro = document.getElementById('intro');
+      const site = document.getElementById('site');
+
+      // Sweep up
+      transition.classList.add('sweep-in');
+
+      setTimeout(() => {
+        // Show site, hide intro
+        site.classList.add('visible');
+        intro.classList.add('hidden');
+        window._stopParticles && window._stopParticles();
+
+        // Sweep away
+        transition.classList.remove('sweep-in');
+        transition.classList.add('sweep-out');
+
+        // Init site
+        App.init();
+
+        setTimeout(() => {
+          transition.classList.remove('sweep-out');
+        }, 500);
+      }, 400);
+    }
+
+    // ─── CONTENT DATA ───
     const CATEGORIES = [
       { id: "term", label: "Viral Terms", emoji: "💬", color: "#ff2d55" },
       { id: "ai", label: "AI Trends", emoji: "🤖", color: "#30d158" },
@@ -325,7 +819,6 @@
       { id: "creator", label: "Creator Drama", emoji: "🎭", color: "#ff9500" }
     ];
 
-    // FULL CONTENT DATA
     const CONTENT = [
       {
         id: 101,
@@ -342,32 +835,24 @@
           <div class="content-block">
             <div class="content-block-label">🌍 Background</div>
             <div class="content-block-text">
-              <p>The current war involving Iran did not begin suddenly. It is the result of <strong>years of rising regional tensions, political pressure, and a series of military escalations</strong> that gradually pushed the situation toward open conflict. Long-standing disputes, border clashes, and competing alliances created a fragile environment where even a small spark could trigger a larger confrontation.</p>
+              <p>The current war involving Iran did not begin suddenly. It is the result of <strong>years of rising regional tensions, political pressure, and a series of military escalations</strong> that gradually pushed the situation toward open conflict.</p>
             </div>
           </div>
           <div class="content-block">
             <div class="content-block-label">💥 How It Escalated</div>
             <div class="content-block-text">
               <p>The immediate escalation began after a sequence of <strong>cross-border strikes and retaliatory attacks</strong>. Each side accused the other of aggression, and what started as isolated incidents quickly expanded into sustained military operations.</p>
-              <p>Strategic regions — including border zones and key infrastructure points — became early flashpoints as the conflict intensified. Neither side appeared willing to de-escalate, and international diplomatic efforts struggled to gain traction as the situation rapidly evolved.</p>
             </div>
           </div>
           <div class="content-block">
             <div class="content-block-label">🗺️ Key Flashpoints</div>
             <div class="content-block-text">
               <ul style="margin-left: 20px; margin-top: 10px;">
-                <li><strong>Border Zones:</strong> Early skirmishes along disputed border regions served as the initial trigger points for wider military engagement.</li>
-                <li><strong>Infrastructure Targets:</strong> Key infrastructure — including energy and communications — became strategic targets as the conflict widened.</li>
-                <li><strong>Proxy Networks:</strong> Iran's longstanding network of regional allies and proxy forces has played a significant role in expanding the geographic scope of the conflict.</li>
-                <li><strong>International Involvement:</strong> Competing alliances and outside powers have complicated efforts to contain the conflict to a single theater.</li>
+                <li><strong>Border Zones:</strong> Early skirmishes along disputed border regions.</li>
+                <li><strong>Infrastructure Targets:</strong> Key energy and communications infrastructure.</li>
+                <li><strong>Proxy Networks:</strong> Iran's regional allies expanded the conflict's scope.</li>
+                <li><strong>International Involvement:</strong> Competing alliances complicated containment efforts.</li>
               </ul>
-            </div>
-          </div>
-          <div class="content-block">
-            <div class="content-block-label">📱 What People Online Are Saying</div>
-            <div class="content-block-text">
-              <p>Alongside the confirmed geopolitical factors, a wave of <strong>online speculation</strong> has emerged. Some people believe the timing of the war may also be connected to attempts to shift public attention away from other high-profile global stories — including the release of documents related to the <strong>Epstein case</strong>.</p>
-              <p>These claims <strong>have not been verified</strong>, but they have gained significant traction on social media platforms, contributing to the broader public debate about the motives behind the conflict. As with many major geopolitical events, the line between confirmed reporting and viral theory has become increasingly blurred online.</p>
             </div>
           </div>
           <div class="content-block">
@@ -376,17 +861,8 @@
               <ul style="margin-left: 20px; margin-top: 10px;">
                 <li>✅ <strong>Confirmed:</strong> Years of regional tensions preceded the conflict.</li>
                 <li>✅ <strong>Confirmed:</strong> Cross-border strikes and retaliations triggered the open escalation.</li>
-                <li>✅ <strong>Confirmed:</strong> The conflict has rapidly become one of the most significant regional crises in years.</li>
-                <li>❓ <strong>Unverified:</strong> Claims linking the war's timing to Epstein document releases or deliberate distraction strategies.</li>
-                <li>❓ <strong>Unverified:</strong> Specific casualty figures and territorial claims from either side.</li>
+                <li>❓ <strong>Unverified:</strong> Claims linking the war's timing to Epstein document releases.</li>
               </ul>
-            </div>
-          </div>
-          <div class="content-block">
-            <div class="content-block-label">🗓️ Where Things Stand Now</div>
-            <div class="content-block-text">
-              <p>The situation continues to evolve rapidly. Understanding both <strong>the confirmed events and the public narratives surrounding them</strong> is essential to following how the conflict is unfolding — and where it may lead next.</p>
-              <p>As with any major conflict, reliable sourcing matters. Cross-reference breaking claims with established outlets and be cautious of unverified social media reports that may spread faster than the facts.</p>
             </div>
           </div>
         `
@@ -406,69 +882,19 @@
           <div class="content-block">
             <div class="content-block-label">📰 Breaking News</div>
             <div class="content-block-text">
-              <p><strong>Los Angeles, CA</strong> – A new court filing by Los Angeles County prosecutors paints a gruesome picture of the events surrounding the death of 14-year-old Celeste Rivas Hernandez. The document alleges that singer David Anthony Burke, known professionally as D4vd, used a chainsaw to dismember the teenager inside his Hollywood home.</p>
-              <p><em>Source: <a href="https://www.bbc.com/news/articles/cvgzll79529o" target="_blank" style="color: var(--neon-pink);">BBC</a></em></p>
+              <p><strong>Los Angeles, CA</strong> – A new court filing by LA County prosecutors alleges that singer David Anthony Burke (D4vd) used a chainsaw to dismember 14-year-old Celeste Rivas Hernandez inside his Hollywood home.</p>
             </div>
           </div>
           <div class="content-block">
             <div class="content-block-label">⚖️ The Charges</div>
             <div class="content-block-text">
-              <p>Burke, 21, has been charged with <strong>first-degree murder with special circumstances</strong>, <strong>continuous sexual abuse of a child under 14</strong>, and <strong>mutilating a corpse</strong>. The special circumstances include allegations of "lying in wait," murder for financial gain, and murdering a witness to prevent her from testifying.</p>
-              <p>If convicted, he faces life in prison without parole or the death penalty, though prosecutors have not yet decided if they will pursue capital punishment.</p>
-              <p><em>Source: <a href="https://www.bbc.com/news/articles/cvgzll79529o" target="_blank" style="color: var(--neon-pink);">BBC</a></em></p>
-            </div>
-          </div>
-          <div class="content-block">
-            <div class="content-block-label">🔍 The Discovery</div>
-            <div class="content-block-text">
-              <p>On September 8, 2025, Los Angeles Police Department officers responded to a Hollywood tow yard after reports of a "foul odor" coming from an impounded Tesla. Inside the front trunk of the vehicle, which was registered to Burke, they found two black bags containing a severed head, torso, and limbs.</p>
-              <p>The remains were later identified as Celeste Rivas Hernandez, a 14-year-old who had been reported missing from her home in Lake Elsinore, California.</p>
-              <p><em>Source: <a href="https://edition.cnn.com/2026/04/24/us/celeste-rivas-hernandez-d4vd#:~:text=About%20a%20year%20after%20Cortez,Young%20victim's%20life%20cut%20short" target="_blank" style="color: var(--neon-pink);">CNN</a></em></p>
-            </div>
-          </div>
-          <div class="content-block">
-            <div class="content-block-label">📸 The Illegal Relationship</div>
-            <div class="content-block-text">
-              <p>Prosecutors allege that Burke met Celeste when she was just 11 years old and began a sexual relationship with her when she turned 13. In February 2024, after Celeste was reported missing, authorities contacted Burke and informed him of her age. Despite this, prosecutors claim he "continued to pursue" her.</p>
-              <p>Text messages recovered from the devices contained references to "sex, pregnancy, abortion and use of the Plan B emergency contraceptive."</p>
-              <p><em>Source: <a href="https://www.nbclosangeles.com/news/local/celeste-rivas-hernandez-timeline/3878366/" target="_blank" style="color: var(--neon-pink);">NBC</a></em></p>
-            </div>
-          </div>
-          <div class="content-block">
-            <div class="content-block-label">🔪 The Murder</div>
-            <div class="content-block-text">
-              <p>Prosecutors allege that on the night of <strong>April 23, 2025</strong>, just two days before the release of his debut album <em>Withered</em>, Celeste threatened to expose their relationship and ruin his music career. Shortly after, Burke allegedly ordered an Uber to bring her from her home to his rental house in the Hollywood Hills.</p>
-              <p>"Knowing he had to silence the victim before she ruined his music career as she had threatened... defendant stabbed the victim to death multiple times and stood by while she bled out," the filing states.</p>
-              <p>To cover his tracks, prosecutors say Burke sent text messages to Celeste's phone twenty minutes after her arrival, asking where she was, in an attempt to make it seem as though she never arrived.</p>
-              <p><em>Source: <a href="https://www.bbc.com/news/articles/crr1v4gzkvlo" target="_blank" style="color: var(--neon-pink);">BBC</a></em></p>
-            </div>
-          </div>
-          <div class="content-block">
-            <div class="content-block-label">🪚 The Dismemberment Cover-Up</div>
-            <div class="content-block-text">
-              <p>In the days following the murder, Burke allegedly ordered a shovel, two chainsaws, a body bag, and a blue inflatable kiddie pool from online retailers like Amazon and Home Depot under the alias "Victoria Mendez." The inflatable pool was used in his garage to prevent blood from spilling onto the floor while he dismembered her body with the chainsaw.</p>
-              <p>Blue plastic fragments found embedded in Celeste's remains were later matched to the pool by the LAPD's forensic laboratory.</p>
-              <p>Burke also allegedly amputated Celeste's fingers to remove evidence of a tattoo she had gotten of his name. He later had a "burn cage," a portable incinerator, delivered to his home as part of his plan to destroy the evidence.</p>
-              <p><em>Source: <a href="https://www.courttv.com/news/singer-d4vd-bought-chain-saws-shovel-and-burn-cage-after-killing-teen-docs/#:~:text=Prosecutors%20described%20a%20grim%20scene,embedded%20in%20the%20victim's%20remains.%E2%80%9D" target="_blank" style="color: var(--neon-pink);">Court TV</a></em></p>
-            </div>
-          </div>
-          <div class="content-block">
-            <div class="content-block-label">📱 Additional Evidence</div>
-            <div class="content-block-text">
-              <ul style="margin-left: 20px; margin-top: 10px;">
-                <li><strong>Child Pornography:</strong> During a court hearing on April 23, 2026, Deputy District Attorney Beth Silverman revealed that a search of Burke's cell phone uncovered "a significant amount of child pornography."</li>
-                <li><strong>The "Shhh..." Tattoo:</strong> Both Burke and Celeste had a small tattoo on their finger that read "Shhh..."</li>
-                <li><strong>Digital Evidence:</strong> Investigators have amassed over 40 terabytes of digital evidence in the case, including data from a wiretap and searches of his iCloud accounts. Law enforcement executed 54 search warrants in the case.</li>
-              </ul>
-              <p><em>Sources: <a href="https://ca.rollingstone.com/d4vd-charged-murder-celeste-rivas-hernandez/" target="_blank" style="color: var(--neon-pink);">Rollingstone</a></em></p>
+              <p>Burke, 21, faces <strong>first-degree murder with special circumstances</strong>, <strong>continuous sexual abuse of a child under 14</strong>, and <strong>mutilating a corpse</strong>. He could face life without parole or the death penalty.</p>
             </div>
           </div>
           <div class="content-block">
             <div class="content-block-label">🗓️ What's Next</div>
             <div class="content-block-text">
-              <p>Burke was arrested on April 16, 2026, and has pleaded <strong>not guilty</strong> to all charges. His attorney, Blair Berk, has stated that the actual evidence will show he did not commit the murder and that the prosecution's filing is "entirely one-sided."</p>
-              <p>Burke is due back in court for a preliminary hearing on <strong>May 26, 2026</strong>.</p>
-              <p><em>Source: <a href="https://ca.rollingstone.com/d4vd-charged-murder-celeste-rivas-hernandez/" target="_blank" style="color: var(--neon-pink);">Rollingstone</a></em></p>
+              <p>Burke was arrested on April 16, 2026, and has pleaded <strong>not guilty</strong> to all charges. His attorney states the evidence will show he did not commit the murder. He is due back in court for a preliminary hearing on <strong>May 26, 2026</strong>.</p>
             </div>
           </div>
         `
@@ -476,31 +902,31 @@
       {
         id: 1, slug: "delulu", title: "Delulu", type: "term",
         tags: ["slang"], summary: "The Gen Z philosophy of manifesting reality through delusion.",
-        readTime: 2, createdAt: "2025-04-28", isTrending: true, views:0,
+        readTime: 2, createdAt: "2025-04-28", isTrending: true, views: 0,
         meaning: "Short for 'delusional.' Used positively for self-empowerment.",
         origin: "Popularized in K-pop fan communities around 2022.",
-        why_trending: "Gen Z reclaimed it as a mindset."
+        why_trending: "Gen Z reclaimed it as a mindset: 'being delulu is the solulu.'"
       },
       {
         id: 2, slug: "sora-ai", title: "Sora AI Video", type: "ai",
         tags: ["ai", "openai"], summary: "OpenAI's text-to-video model generating Hollywood-quality footage.",
         readTime: 3, createdAt: "2025-04-20", isTrending: true, views: 0,
-        tool_or_feature: "Sora by OpenAI", what_it_does: "Generates video from text prompts.",
+        tool_or_feature: "Sora by OpenAI", what_it_does: "Generates cinematic video from text prompts.",
         why_viral: "Demo videos were indistinguishable from real footage."
       },
       {
         id: 3, slug: "aura-points", title: "Aura Points", type: "term",
         tags: ["slang"], summary: "A gamified way of rating how cool someone is.",
         readTime: 2, createdAt: "2025-04-25", isTrending: true, views: 0,
-        meaning: "Your mysterious coolness factor.", origin: "Evolved from gaming culture.",
-        why_trending: "Gamified social dynamics."
+        meaning: "Your mysterious coolness factor, rated by others.", origin: "Evolved from gaming culture.",
+        why_trending: "Gamified social dynamics went viral on TikTok."
       }
     ];
 
-    // MAIN APP
-  const App = (() => {
-      const $ = (sel) => document.querySelector(sel);
-      
+    // ─── MAIN APP ───
+    const App = (() => {
+      const $ = sel => document.querySelector(sel);
+
       function formatViews(n) {
         if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
         if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
@@ -513,8 +939,7 @@
       }
 
       function typeLabel(type) {
-        const map = { term: '💬 Term', ai: '🤖 AI', news: '📡 News', creator: '🎭 Creator' };
-        return map[type] || type;
+        return { term: '💬 Term', ai: '🤖 AI', news: '📡 News', creator: '🎭 Creator' }[type] || type;
       }
 
       function typeBadgeClass(type) { return `type-badge badge-${type}`; }
@@ -527,32 +952,27 @@
             <h3 class="card-title">${article.title}</h3>
             <p class="card-summary">${article.summary}</p>
             <div style="font-size:0.75rem;color:var(--text-muted);margin-top:12px;">
-              ${formatViews(article.views)} views • ${article.readTime} min read
+              ${formatViews(article.views)} views · ${article.readTime} min read
             </div>
           </div>
         `;
       }
 
       function renderHome() {
-        const recent = [...CONTENT].slice(0, 6);
-        
-        const categoryChips = CATEGORIES.map(cat => `
+        const cards = CONTENT.slice(0, 6).map(a => renderArticleCard(a)).join('');
+        const chips = CATEGORIES.map(cat => `
           <div class="category-chip" onclick="App.navigate('#/category/${cat.id}')">
-            <span>${cat.emoji}</span>
-            <span>${cat.label}</span>
+            <span>${cat.emoji}</span><span>${cat.label}</span>
           </div>
         `).join('');
-        
-        const cards = recent.map(a => renderArticleCard(a)).join('');
-        
+
         return `
           <div class="container">
             <div class="hero">
               <h1 class="hero-title"><span class="gradient-text">TrendExplainr</span></h1>
               <p class="hero-subtitle">Understand viral trends, slang, and internet culture — in 30 seconds flat.</p>
-              <button class="hero-cta" onclick="document.getElementById('articles-grid').scrollIntoView({behavior:'smooth'})">Explore Trends ↓</button>
             </div>
-            <div class="categories-grid">${categoryChips}</div>
+            <div class="categories-grid">${chips}</div>
             <h2 style="font-family:var(--font-display);margin:32px 0 16px;">🔥 Latest Trends</h2>
             <div class="articles-grid" id="articles-grid">${cards}</div>
           </div>
@@ -561,9 +981,7 @@
 
       function renderCategory(type) {
         const items = CONTENT.filter(a => a.type === type);
-        const cards = items.map(a => renderArticleCard(a)).join('');
         const cat = CATEGORIES.find(c => c.id === type);
-        
         return `
           <div class="container">
             <div style="margin:100px 0 40px;">
@@ -571,7 +989,7 @@
               <h1 style="margin:20px 0;">${cat?.emoji || '📁'} ${cat?.label || type}</h1>
               <p>${items.length} articles</p>
             </div>
-            <div class="articles-grid">${cards || '<p>No articles yet.</p>'}</div>
+            <div class="articles-grid">${items.map(a => renderArticleCard(a)).join('') || '<p>No articles yet.</p>'}</div>
           </div>
         `;
       }
@@ -579,118 +997,85 @@
       function renderArticle(slug) {
         const article = CONTENT.find(a => a.slug === slug);
         if (!article) return '<div class="container"><h1>Article not found</h1></div>';
-        
+
         let contentBody = '';
-        
         if (article.fullContent) {
           contentBody = article.fullContent;
         } else if (article.type === 'term') {
           contentBody = `
-            <div class="content-block"><div class="content-block-label">📖 Meaning</div><div class="content-block-text"><p>${article.meaning || 'No description'}</p></div></div>
-            <div class="content-block"><div class="content-block-label">📍 Origin</div><div class="content-block-text"><p>${article.origin || 'Unknown'}</p></div></div>
-            <div class="content-block"><div class="content-block-label">🔥 Why It\'s Trending</div><div class="content-block-text"><p>${article.why_trending || 'Going viral now'}</p></div></div>
+            <div class="content-block"><div class="content-block-label">📖 Meaning</div><p>${article.meaning}</p></div>
+            <div class="content-block"><div class="content-block-label">📍 Origin</div><p>${article.origin}</p></div>
+            <div class="content-block"><div class="content-block-label">🔥 Why It's Trending</div><p>${article.why_trending}</p></div>
           `;
         } else if (article.type === 'ai') {
           contentBody = `
-            <div class="content-block"><div class="content-block-label">🛠️ The Tool</div><div class="content-block-text"><p>${article.tool_or_feature || 'AI tool'}</p></div></div>
-            <div class="content-block"><div class="content-block-label">⚡ What It Does</div><div class="content-block-text"><p>${article.what_it_does || 'No description'}</p></div></div>
-            <div class="content-block"><div class="content-block-label">🔥 Why It Went Viral</div><div class="content-block-text"><p>${article.why_viral || 'Currently trending'}</p></div></div>
+            <div class="content-block"><div class="content-block-label">🛠️ The Tool</div><p>${article.tool_or_feature}</p></div>
+            <div class="content-block"><div class="content-block-label">⚡ What It Does</div><p>${article.what_it_does}</p></div>
+            <div class="content-block"><div class="content-block-label">🔥 Why It Went Viral</div><p>${article.why_viral}</p></div>
           `;
         } else {
-          contentBody = `
-            <div class="content-block"><div class="content-block-label">📰 Summary</div><div class="content-block-text"><p>${article.summary}</p></div></div>
-          `;
+          contentBody = `<div class="content-block"><div class="content-block-label">📰 Summary</div><p>${article.summary}</p></div>`;
         }
-        
+
         return `
           <div class="container">
             <div style="margin:100px 0 40px;">
-              <div class="article-back" onclick="App.navigate('#/')">
-                <span>←</span> <span>Back to Home</span>
-              </div>
+              <div class="article-back" onclick="App.navigate('#/')">← Back to Home</div>
               <div class="article-meta-row">
                 <span class="${typeBadgeClass(article.type)}">${typeLabel(article.type)}</span>
                 ${article.isTrending ? '<span class="trending-badge">🔥 Trending</span>' : ''}
-                <span class="article-date">${formatDate(article.createdAt)}</span>
-                <span class="article-read-time">⏱ ${article.readTime} min read</span>
-                <span>${formatViews(article.views)} views</span>
+                <span style="color:var(--text-muted);font-size:0.875rem;">${formatDate(article.createdAt)}</span>
+                <span style="color:var(--text-muted);font-size:0.875rem;">⏱ ${article.readTime} min read</span>
               </div>
               <h1 class="article-title">${article.title}</h1>
               <p class="article-summary">${article.summary}</p>
             </div>
-            <div class="article-body">
-              ${contentBody}
-            </div>
+            <div class="article-body">${contentBody}</div>
           </div>
         `;
       }
 
       function renderSearch(query) {
-        const searchTerm = decodeURIComponent(query).toLowerCase();
-        
-        const results = CONTENT.filter(article => {
-          return article.title.toLowerCase().includes(searchTerm) ||
-                 article.summary.toLowerCase().includes(searchTerm) ||
-                 (article.tags && article.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ||
-                 article.type.toLowerCase().includes(searchTerm);
-        });
-        
-        const resultsHTML = results.length > 0 
-          ? results.map(article => renderArticleCard(article)).join('')
-          : `<div style="text-align:center; padding:60px 20px; color:var(--text-muted);">
-               <div style="font-size:3rem; margin-bottom:16px;">🔍</div>
-               <h3>No results found for "${searchTerm}"</h3>
-               <p style="margin-top:8px;">Try "delulu", "d4vd", or "sora"</p>
-             </div>`;
-        
+        const term = decodeURIComponent(query).toLowerCase();
+        const results = CONTENT.filter(a =>
+          a.title.toLowerCase().includes(term) ||
+          a.summary.toLowerCase().includes(term) ||
+          (a.tags && a.tags.some(t => t.includes(term)))
+        );
         return `
           <div class="container">
             <div style="margin:100px 0 40px;">
-              <span onclick="App.navigate('#/')" style="cursor:pointer;color:var(--neon-pink);">← Back to Home</span>
+              <span onclick="App.navigate('#/')" style="cursor:pointer;color:var(--neon-pink);">← Back</span>
               <h1 style="margin:20px 0 8px;">Search Results</h1>
-              <p style="color:var(--text-muted);">${results.length} result${results.length !== 1 ? 's' : ''} for "${searchTerm}"</p>
+              <p style="color:var(--text-muted);">${results.length} result${results.length !== 1 ? 's' : ''} for "${term}"</p>
             </div>
             <div class="articles-grid">
-              ${resultsHTML}
+              ${results.length > 0 ? results.map(a => renderArticleCard(a)).join('') : '<p style="color:var(--text-muted);">No results found.</p>'}
             </div>
           </div>
         `;
       }
 
       function initTicker() {
-        const ticker = $('#ticker-inner');
-        if (ticker && TRENDING_TICKER) {
-          const items = [...TRENDING_TICKER, ...TRENDING_TICKER];
-          ticker.innerHTML = items.map(t => `<span class="ticker-item">${t}</span>`).join('');
-        }
+        const el = $('#ticker-inner');
+        if (!el) return;
+        const items = [...TRENDING_TICKER, ...TRENDING_TICKER];
+        el.innerHTML = items.map(t => `<span class="ticker-item">${t}</span>`).join('');
       }
 
       function initHamburger() {
         const btn = $('#hamburger-btn');
         const mobileNav = $('#mobile-nav');
-        if (btn && mobileNav) {
-          btn.addEventListener('click', () => {
-            btn.classList.toggle('open');
-            mobileNav.classList.toggle('open');
-          });
-        }
+        if (btn && mobileNav) btn.addEventListener('click', () => mobileNav.classList.toggle('open'));
       }
 
       function initSearch() {
-        const searchInput = document.getElementById('nav-search-input');
-        if (!searchInput) return;
-        
-        searchInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            const query = searchInput.value.trim();
-            if (query) {
-              window.location.hash = `#/search/${encodeURIComponent(query)}`;
-              searchInput.value = '';
-              const mobileNav = document.getElementById('mobile-nav');
-              const hamburgerBtn = document.getElementById('hamburger-btn');
-              if (mobileNav) mobileNav.classList.remove('open');
-              if (hamburgerBtn) hamburgerBtn.classList.remove('open');
-            }
+        const input = document.getElementById('nav-search-input');
+        if (!input) return;
+        input.addEventListener('keypress', e => {
+          if (e.key === 'Enter' && input.value.trim()) {
+            window.location.hash = `#/search/${encodeURIComponent(input.value.trim())}`;
+            input.value = '';
           }
         });
       }
@@ -699,23 +1084,14 @@
         const hash = window.location.hash || '#/';
         const app = $('#app');
         if (!app) return;
-        
+
         let html = '';
-        if (hash === '#/' || hash === '') {
-          html = renderHome();
-        } else if (hash.startsWith('#/article/')) {
-          const slug = hash.replace('#/article/', '');
-          html = renderArticle(slug);
-        } else if (hash.startsWith('#/category/')) {
-          const type = hash.replace('#/category/', '');
-          html = renderCategory(type);
-        } else if (hash.startsWith('#/search/')) {
-          const query = hash.replace('#/search/', '');
-          html = renderSearch(query);
-        } else {
-          html = '<div class="container"><h1>404 - Page not found</h1></div>';
-        }
-        
+        if (hash === '#/' || hash === '') html = renderHome();
+        else if (hash.startsWith('#/article/')) html = renderArticle(hash.replace('#/article/', ''));
+        else if (hash.startsWith('#/category/')) html = renderCategory(hash.replace('#/category/', ''));
+        else if (hash.startsWith('#/search/')) html = renderSearch(hash.replace('#/search/', ''));
+        else html = '<div class="container"><h1>404</h1></div>';
+
         app.innerHTML = html;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -724,19 +1100,16 @@
       function goToArticle(slug) { navigate(`#/article/${slug}`); }
 
       window.addEventListener('hashchange', route);
-      
+
       function init() {
         initTicker();
         initHamburger();
         initSearch();
         route();
       }
-      
+
       return { init, navigate, goToArticle };
     })();
-
-    // FIXED: No space in DOMContentLoaded!
-    document.addEventListener('DOMContentLoaded', App.init);
   </script>
 </body>
 </html>
